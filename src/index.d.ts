@@ -70,7 +70,7 @@ export interface FixedProps {
 
 export class Fixed extends React.Component<FixedProps> {}
 
-export interface ReactStackLayoutGapProviderProps {
+export interface ReactStackLayoutGapFactorProviderProps {
     value: number;
 }
 
