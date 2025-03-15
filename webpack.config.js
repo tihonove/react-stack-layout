@@ -1,7 +1,6 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-// Базовая конфигурация, общая для обоих форматов
 const baseConfig = {
   mode: process.env.NODE_ENV || 'development',
   entry: './src/index.tsx',
