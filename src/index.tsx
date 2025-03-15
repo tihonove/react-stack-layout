@@ -1,19 +1,28 @@
 import * as React from "react";
-import classnames from "classnames/bind";
-import styles from "./index.less";
 
-const cn = classnames.bind(styles.locals);
+const dropLastChildMarginRight = "a579fb7e4";
+const dropLastChildMarginBottom = "a961eba0a";
+
+addStyleTag(`
+    .${dropLastChildMarginRight} > *:last-child {
+        margin-right: 0 !important;
+    }
+    .${dropLastChildMarginBottom} > *:last-child {
+        margin-bottom: 0 !important;
+    }    
+`, "react-stack-layout-2.0");
 
 type VerticalAlign = "top" | "bottom" | "center" | "baseline" | "stretch";
 
-if (typeof window !== "undefined") {
-    styles.use();
-}
+const GapFactorContext =  React.createContext(5);
+const GapContext =  React.createContext(0);
+const DirectionContext =  React.createContext<"row" | "column">("row");
+
+export const ReactStackLayoutGapFactorProvider = GapFactorContext.Provider;
 
 interface RowStackProps {
     tag?: string | React.ComponentType;
     children?: React.ReactNode;
-    id?: string;
     block?: boolean;
     inline?: boolean;
     baseline?: boolean;
@@ -21,59 +30,64 @@ interface RowStackProps {
     className?: string;
     style?: React.CSSProperties;
     gap?: number;
-    htmlFor?: null | string;
 }
 
-export class RowStack extends React.Component<RowStackProps> {
-    public static verticalAlignMap = {
-        top: "flex-start",
-        bottom: "flex-end",
-        center: "center",
-        baseline: "baseline",
-        stretch: "stretch",
+const verticalAlignMap = {
+    top: "flex-start",
+    bottom: "flex-end",
+    center: "center",
+    baseline: "baseline",
+    stretch: "stretch",
+};
+
+function getFlexBoxAlignItems(horizontalAlign: VerticalAlign | typeof undefined, baseline: boolean): string {
+    let resultHorizontalAlign = horizontalAlign || "top";
+    if (baseline) {
+        if (horizontalAlign !== undefined) {
+            throw new Error("Should be specified horizontalAlign or one of it's shorthand");
+        }
+        resultHorizontalAlign = "baseline";
+    }
+    return verticalAlignMap[resultHorizontalAlign];
+}
+
+export function RowStack(props: RowStackProps) {
+    const {
+        tag,
+        children,
+        className,
+        block,
+        inline,
+        baseline,
+        verticalAlign,
+        style = {},
+        gap = 0,
+        ...restProps
+    } = props;
+    const TagComponent: any = tag || "div";
+
+    if (block && inline) {
+        throw new Error("Only one of block or inline property should be specified");
+    }
+    const resultStyle = {
+        display: block || (inline === false) ? "flex" : "inline-flex",
+        flexFlow: "row nowrap",
+        alignItems: getFlexBoxAlignItems(verticalAlign, baseline || false),
+        ...style,
     };
 
-    public getFlexBoxAlignItems(horizontalAlign: VerticalAlign | typeof undefined, baseline: boolean): string {
-        let resultHorizontalAlign = horizontalAlign || "top";
-        if (baseline) {
-            if (horizontalAlign !== undefined) {
-                throw new Error("Should be specified horizontalAlign or one of it's shorthand");
-            }
-            resultHorizontalAlign = "baseline";
-        }
-        return RowStack.verticalAlignMap[resultHorizontalAlign];
-    }
-
-    public render(): JSX.Element {
-        const {
-            tag,
-            children,
-            block,
-            inline,
-            baseline,
-            verticalAlign,
-            className,
-            style = {},
-            gap = 0,
-            id,
-        } = this.props;
-        const TagComponent = tag || "div";
-
-        if (block && inline) {
-            throw new Error("Only one of block or inline property should be specified");
-        }
-        return (
-            <TagComponent
-                id={id}
-                className={cn("row-stack", `gap-${gap}`, { ["block"]: block }, className)}
-                style={{
-                    ...style,
-                    alignItems: this.getFlexBoxAlignItems(verticalAlign, baseline || false),
-                }}>
-                {children}
-            </TagComponent>
-        );
-    }
+    return (
+        <GapContext.Provider value={gap}>
+            <DirectionContext.Provider value={"row"}>
+                <TagComponent 
+                    className={`${dropLastChildMarginRight} ${className ?? ""}`} 
+                    style={resultStyle} 
+                    {...restProps}>
+                    {children}
+                </TagComponent>
+            </DirectionContext.Provider>
+        </GapContext.Provider>
+    );
 }
 
 type HorizontalAlign = "left" | "right" | "center" | "stretch";
@@ -90,54 +104,63 @@ interface ColumnStackProps {
     gap?: number;
 }
 
-export class ColumnStack extends React.Component<ColumnStackProps> {
-    public static alignMap = {
-        left: "flex-start",
-        right: "flex-end",
-        center: "center",
-        stretch: "stretch",
+const alignMap = {
+    left: "flex-start",
+    right: "flex-end",
+    center: "center",
+    stretch: "stretch",
+};
+
+function getColumnFlexBoxAlignItems(align: HorizontalAlign | typeof undefined, stretch: boolean): string {
+    let resultAlign = align || "left";
+    if (stretch) {
+        if (align !== undefined) {
+            throw new Error("Should be specified horizontalAlign or one of it's shorthand");
+        }
+        resultAlign = "stretch";
+    }
+    return alignMap[resultAlign];
+}
+
+export function ColumnStack(props: ColumnStackProps) {
+    const {
+        tag,
+        children,
+        block,
+        inline,
+        stretch,
+        horizontalAlign,
+        className = "",
+        style = {},
+        gap = 0,
+        ...restProps
+    } = props;
+
+    if (block === true && inline === true) {
+        throw new Error("Only one of block or inline property should be specified");
+    }
+
+    const resultStyle = {
+        display: block || (inline === false) ? "flex" : "inline-flex",
+        maxWidth: "100%",
+        flexFlow: "column nowrap",
+        alignItems: getColumnFlexBoxAlignItems(horizontalAlign, stretch || false),
+        ...style,
     };
 
-    public getFlexBoxAlignItems(horizontalAlign: HorizontalAlign | typeof undefined, stretch: boolean): string {
-        let resultHorizontalAlign = horizontalAlign || "left";
-        if (stretch) {
-            if (horizontalAlign !== undefined) {
-                throw new Error("Should be specified horizontalAlign or one of it's shorthand");
-            }
-            resultHorizontalAlign = "stretch";
-        }
-        return ColumnStack.alignMap[resultHorizontalAlign];
-    }
-
-    public render(): JSX.Element {
-        const {
-            tag,
-            children,
-            block,
-            inline,
-            stretch,
-            horizontalAlign,
-            className = "",
-            style = {},
-            gap = 0,
-        } = this.props;
-
-        if (block === true && inline === true) {
-            throw new Error("Only one of block or inline property should be specified");
-        }
-
-        const TagComponent = tag || "div";
-        return (
-            <TagComponent
-                className={cn("column-stack", `gap-${gap}`, { ["block"]: block }, className)}
-                style={{
-                    ...style,
-                    alignItems: this.getFlexBoxAlignItems(horizontalAlign, stretch || false),
-                }}>
-                {children}
-            </TagComponent>
-        );
-    }
+    const TagComponent: any = tag || "div";
+    return (
+        <GapContext.Provider value={gap}>
+            <DirectionContext.Provider value={"column"}>
+                <TagComponent 
+                    className={`${dropLastChildMarginBottom} ${className ?? ""}`} 
+                    style={resultStyle} 
+                    {...restProps}>
+                    {children}
+                </TagComponent>
+            </DirectionContext.Provider>
+        </GapContext.Provider>
+    );
 }
 
 interface FitProps {
@@ -151,11 +174,26 @@ interface FitProps {
     onClick?(e: React.MouseEvent): void;
 }
 
-export function Fit({ tag, nextGap, className, children, ...rest }: FitProps): JSX.Element {
-    const TagComponent = tag || "div";
-    const gapClassName = nextGap != undefined ? `next-gap-${nextGap}` : undefined;
+export function Fit({ tag, nextGap, children, style, ...rest }: FitProps) {
+    const TagComponent: any = tag || "div";
+    
+    const direction = React.useContext(DirectionContext);
+    const gap = nextGap ?? React.useContext(GapContext);
+    const gapFactor = React.useContext(GapFactorContext);
+
+    const directionStyle = direction == "row" ? { 
+        maxWidth: "100%",
+        flexGrow: 0,
+        flexShrink: 0,
+        marginRight: gap * gapFactor, 
+    } : {
+        flexGrow: 0,
+        flexShrink: 0,
+        marginBottom: gap * gapFactor, 
+    };
+
     return (
-        <TagComponent className={cn(className, "fit", gapClassName)} {...rest}>
+        <TagComponent style={{ ...directionStyle, ...style }} {...rest}>
             {children}
         </TagComponent>
     );
@@ -165,12 +203,27 @@ interface FillProps {
     tag?: string | React.ComponentType;
     className?: string;
     children?: React.ReactNode;
+    style?: React.CSSProperties;
+    nextGap?: number;
 }
 
-export function Fill({ tag, children, className, ...rest }: FillProps): JSX.Element {
-    const TagComponent = tag || "div";
+export function Fill({ tag, children, className, nextGap, style, ...rest }: FillProps) {
+    const TagComponent: any = tag || "div";
+    
+    const direction = React.useContext(DirectionContext);
+    const gap = nextGap ?? React.useContext(GapContext);
+    const gapFactor = React.useContext(GapFactorContext);
+
+    const directionStyle = direction == "row" ? {
+        flex: "0 1 100%",
+        marginRight: gap * gapFactor,
+    } : {
+        flex: "1 1 auto",
+        marginBottom: gap * gapFactor,
+    }
+
     return (
-        <TagComponent className={cn("fill", className)} {...rest}>
+        <TagComponent style={{ ...directionStyle, ...style }} {...rest}>
             {children}
         </TagComponent>
     );
@@ -184,17 +237,47 @@ interface FixedProps {
     style?: {};
     width: number;
     allowWrap?: boolean;
+    nextGap?: number;
     onClick?(): void;
 }
 
-export function Fixed({ tag, children, width, className, style, allowWrap, ...rest }: FixedProps): JSX.Element {
-    const TagComponent = tag || "div";
+export function Fixed({ tag, children, width, className, style, allowWrap, nextGap, ...rest }: FixedProps) {
+    const TagComponent: any = tag || "div";
+    
+    const direction = React.useContext(DirectionContext);
+    const gap = nextGap ?? React.useContext(GapContext);
+    const gapFactor = React.useContext(GapFactorContext);
+
+    const directionStyle = direction == "row" ? {
+        flexGrow: 0,
+        flexShrink: 0,
+        marginRight: gap * gapFactor,
+    } : {
+        flexGrow: 0,
+        flexShrink: 0,
+        marginBottom: gap * gapFactor,
+    }
+
+    const wrapStyles = !allowWrap ? {
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+    } : {};
+
     return (
-        <TagComponent
-            className={cn("fixed", { "no-overflow": !allowWrap }, className)}
-            style={{ ...style, width: width }}
-            {...rest}>
+        <TagComponent style={{ ...directionStyle, wrapStyles, ...style }} {...rest}>
             {children}
         </TagComponent>
     );
+}
+
+function addStyleTag(content: string, id: string): void {
+    if (document.getElementById(id)) {
+        return;
+    }
+
+    const style = document.createElement("style");
+    style.id = id;
+    style.type = "text/css";
+    style.appendChild(document.createTextNode(content));
+    document.head.appendChild(style);
 }

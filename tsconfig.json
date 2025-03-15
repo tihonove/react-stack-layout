@@ -20,13 +20,10 @@
         "noImplicitAny": true,
         "noImplicitThis": true,
         "noImplicitReturns": true,
-        "suppressImplicitAnyIndexErrors": true,
         "strictFunctionTypes": true,
         "lib": ["es2015", "dom", "esnext", "dom.iterable"]
     },
     "include": [
-        "src/**/*",
-        "stories/**/*",
-        "types/**/*"
+        "src/**/*"
     ]
 }

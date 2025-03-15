@@ -1,48 +1,67 @@
-const path = require("path");
-const CopyWebpackPlugin = require('copy-webpack-plugin')
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-
-const PROD = process.env.NODE_ENV === "production";
-const webpackMode = PROD ? "production" : "development";
-
-const config = {
-    mode: "production",
-    entry: {
-        index: ["./src/index"],
-    },
-    target: ["web", "es5"],
-    output: {
-        path: path.join(__dirname, "dist"),
-        filename: "[name].js",
-        libraryTarget: "commonjs2",
-    },
-    module: {
-        rules: [
-            { test: /\.(tsx?)$/, use: "babel-loader", include: [path.join(__dirname, "src")] },
-            {
-                test: /\.less$/,
-                use: [
-                    { loader: "style-loader", options: { injectType: "lazyStyleTag" } },
-                    { loader: "css-loader", options: {modules: {localIdentName: "rsl-[hash:base64:3]"}}},
-                    "less-loader",
-                ], include: [path.join(__dirname, "src")]
-            },
-        ],
-    },
-    resolve: {
-        extensions: [".tsx", ".ts", ".js", ".jsx"],
-    },
-    externals: {
-        react: "react",
-    },
-    plugins: [
-        new CopyWebpackPlugin({
-            patterns: [{
-                from: "./src/index.d.ts",
-                to: "index.d.ts",
-            }]
-        }),
+// Базовая конфигурация, общая для обоих форматов
+const baseConfig = {
+  mode: process.env.NODE_ENV || 'development',
+  entry: './src/index.tsx',
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  },
+  externals: {
+    react: 'react',
+    'react-dom': 'react-dom',
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(ts|tsx|js|jsx)$/,
+        include: [path.join(__dirname, "src")],
+        use: {
+          loader: 'babel-loader',
+        }
+      },
     ],
+  },
+  optimization: {
+    minimize: false,
+  },
 };
 
-module.exports = config;
+const cjsConfig = {
+  ...baseConfig,
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'index.cjs.js',
+    library: {
+      type: 'commonjs2',
+    },
+  },
+  plugins: [
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: './src/index.d.ts',
+          to: './index.d.ts',
+          noErrorOnMissing: true,
+        },
+      ],
+    }),
+  ],
+};
+
+const esmConfig = {
+  ...baseConfig,
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'index.esm.js',
+    library: {
+      type: 'module',
+    },
+  },
+  experiments: {
+    outputModule: true,
+  },
+};
+
+module.exports = [cjsConfig, esmConfig];

@@ -37,6 +37,7 @@ export class ColumnStack extends React.Component<ColumnStackProps> {}
 export interface FitProps {
     tag?: string | React.ComponentType;
     className?: string;
+    nextGap?: number;
     children?: React.ReactNode;
     style?: React.CSSProperties;
     title?: null | string;
@@ -50,6 +51,7 @@ export interface FillProps {
     tag?: string | React.ComponentType;
     className?: string;
     children?: React.ReactNode;
+    nextGap?: number;
 }
 
 export class Fill extends React.Component<FillProps> {}
@@ -62,7 +64,14 @@ export interface FixedProps {
     style?: {};
     width: number;
     allowWrap?: boolean;
+    nextGap?: number;
     onClick?(): void;
 }
 
 export class Fixed extends React.Component<FixedProps> {}
+
+export interface ReactStackLayoutGapProviderProps {
+    value: number;
+}
+
+export class ReactStackLayoutGapFactorProvider extends React.Component<ReactStackLayoutGapFactorProviderProps> {}
