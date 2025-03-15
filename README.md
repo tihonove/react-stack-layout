@@ -1,4 +1,4 @@
-# react-stack-layout [![npm](https://img.shields.io/npm/v/@skbkontur/react-stack-layout.svg)](https://www.npmjs.com/package/@skbkontur/react-stack-layout) [![docs](https://img.shields.io/badge/docs-complete!-brightgreen.svg)](http://tech.skbkontur.ru/react-stack-layout/)
+# react-stack-layout [![npm](https://img.shields.io/npm/v/@skbkontur/react-stack-layout.svg)](https://www.npmjs.com/package/@skbkontur/react-stack-layout)
 
 Library for quick arrangement of controls in vertical or horizontal stacks.
 Essentially, it represents a [layout manager](https://en.wikipedia.org/wiki/Layout_manager) from the world of Desktop applications.
