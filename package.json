@@ -7,7 +7,8 @@
   "private": false,
   "scripts": {
     "build": "webpack --mode=production",
-    "ladle-serve": "ladle serve"
+    "ladle-serve": "ladle serve",
+    "prepublishOnly": "npm run build"
   },
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.esm.js",
