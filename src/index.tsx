@@ -236,12 +236,13 @@ interface FixedProps {
     children?: React.ReactNode;
     style?: {};
     width: number;
+    height: number;
     allowWrap?: boolean;
     nextGap?: number;
     onClick?(): void;
 }
 
-export function Fixed({ tag, children, width, className, style, allowWrap, nextGap, ...rest }: FixedProps) {
+export function Fixed({ tag, children, width, height, className, style, allowWrap, nextGap, ...rest }: FixedProps) {
     const TagComponent: any = tag || "div";
     
     const direction = React.useContext(DirectionContext);
@@ -252,10 +253,12 @@ export function Fixed({ tag, children, width, className, style, allowWrap, nextG
         flexGrow: 0,
         flexShrink: 0,
         marginRight: gap * gapFactor,
+        width: width,
     } : {
         flexGrow: 0,
         flexShrink: 0,
         marginBottom: gap * gapFactor,
+        height: height,
     }
 
     const wrapStyles = !allowWrap ? {
